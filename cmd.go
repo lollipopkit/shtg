@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/lollipopkit/gommon/term"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,7 +13,7 @@ func run() {
 		Usage:       "Shell History Tool written in Go",
 		Description: "Shell history tool for zsh / fish",
 		Suggest:     true,
-		Copyright:   "2023 lollipopkit",
+		Copyright:   "lollipopkit",
 		Commands: []*cli.Command{
 			{
 				Name:    "dup",
@@ -71,7 +71,7 @@ func run() {
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
-		term.Err(err.Error())
+		panic(err)
 	}
 }
 
@@ -97,7 +97,7 @@ func tidy(c *cli.Context, mode Mode) error {
 	}
 
 	if !mode.Check(c) {
-		term.Warn("Usage: " + c.Command.UsageText)
+		println("Usage: " + c.Command.UsageText)
 		return nil
 	}
 	beforeLen := iface.Len()
@@ -110,7 +110,7 @@ func tidy(c *cli.Context, mode Mode) error {
 
 	dryRun := c.Bool("dry-run")
 	if dryRun {
-		term.Info("output: " + DRY_RUN_OUTPUT_PATH)
+		println("output: " + DRY_RUN_OUTPUT_PATH)
 	}
 	return iface.Write(dryRun)
 }
@@ -138,7 +138,7 @@ func sync(c *cli.Context) error {
 
 	dryRun := c.Bool("dry-run")
 	if dryRun {
-		term.Info("output: " + DRY_RUN_OUTPUT_PATH)
+		println("output: " + DRY_RUN_OUTPUT_PATH)
 	}
 	err = fish.Write(dryRun)
 	if err != nil {
@@ -149,7 +149,7 @@ func sync(c *cli.Context) error {
 
 func printChanges(typ ShellType, beforeLen, afterLen int) {
 	if beforeLen > afterLen {
-		term.Info(
+		fmt.Printf(
 			"[%s] Origin %d, Removed %d, Now %d",
 			typ,
 			beforeLen,
@@ -157,7 +157,7 @@ func printChanges(typ ShellType, beforeLen, afterLen int) {
 			afterLen,
 		)
 	} else if beforeLen < afterLen {
-		term.Info(
+		fmt.Printf(
 			"[%s] Origin %d, Added %d, Now %d",
 			typ,
 			beforeLen,
@@ -165,6 +165,6 @@ func printChanges(typ ShellType, beforeLen, afterLen int) {
 			afterLen,
 		)
 	} else {
-		term.Info("No history changed")
+		println("No history changed")
 	}
 }
