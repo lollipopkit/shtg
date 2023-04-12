@@ -100,18 +100,35 @@ func tidy(c *cli.Context, mode Mode) error {
 		term.Warn("Usage: " + c.Command.Usage)
 		return nil
 	}
+	beforeLen := iface.Len()
 	err = mode.Do(iface, c)
 	if err != nil {
 		return err
 	}
+	afterLen := iface.Len()
+	printChanges(beforeLen, afterLen)
 
 	dryRun := c.Bool("dry-run")
 	if dryRun {
-		term.Info("output: " + DRY_RUN_OUTPUT)
+		term.Info("output: " + DRY_RUN_OUTPUT_PATH)
 	}
 	return iface.Write(dryRun)
 }
 
 func sync() error {
-	panic("not implemented")
+	term.Err("not implemented")
+	return nil
+}
+
+func printChanges(beforeLen, afterLen int) {
+	if beforeLen != afterLen {
+		term.Info(
+			"Origin %d, Removed %d, Now %d",
+			beforeLen,
+			beforeLen-afterLen,
+			afterLen,
+		)
+	} else {
+		term.Info("No history removed")
+	}
 }

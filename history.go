@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -15,6 +18,7 @@ type TidyIface interface {
 	Re(exp string) error
 	Recent(d time.Duration) error
 	Write(dryRun bool) error
+	Len() int
 }
 
 type FishHistoryItem struct {
@@ -88,7 +92,7 @@ func (h *FishHistory) Write(dryRun bool) error {
 		return err
 	}
 	if dryRun {
-		return os.WriteFile(DRY_RUN_OUTPUT, bytes, 0644)
+		return os.WriteFile(DRY_RUN_OUTPUT_PATH, bytes, 0644)
 	}
 	return os.WriteFile(relativePath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
 }
@@ -103,22 +107,79 @@ func (a ZshHistory) Len() int           { return len(a) }
 func (a ZshHistory) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ZshHistory) Less(i, j int) bool { return a[i].When < a[j].When }
 func (h *ZshHistory) Read() error {
-	_, err := os.ReadFile(relativePath(ZSH_HISTORY_RELATIVE_PATH))
+	bytes, err := os.ReadFile(relativePath(ZSH_HISTORY_RELATIVE_PATH))
 	if err != nil {
 		return err
 	}
-
+	macthes := zshRegExp.FindAllString(string(bytes), -1)
+	for _, match := range macthes {
+		groups := zshRegExp.FindStringSubmatch(match)
+		if len(groups) != 3 {
+			continue
+		}
+		t := groups[1]
+		time_, err := strconv.ParseInt(t, 10, 64)
+		if err != nil {
+			continue
+		}
+		*h = append(*h, ZshHistoryItem{
+			Cmd:  groups[2],
+			When: time_,
+		})
+	}
 	return nil
 }
 func (h *ZshHistory) Dup() error {
+	sort.Sort(*h)
+	historyMap := make(map[string]*ZshHistoryItem)
+	for idx := range *h {
+		if _, ok := historyMap[(*h)[idx].Cmd]; ok {
+			continue
+		}
+		historyMap[(*h)[idx].Cmd] = &(*h)[idx]
+	}
+	*h = make([]ZshHistoryItem, 0)
+	for k := range historyMap {
+		*h = append(*h, *historyMap[k])
+	}
+	sort.Sort(*h)
 	return nil
 }
 func (h *ZshHistory) Re(exp string) error {
+	re, err := regexp.Compile(exp)
+	if err != nil {
+		return err
+	}
+	newHistory := make([]ZshHistoryItem, 0)
+	for idx := range *h {
+		if !re.MatchString((*h)[idx].Cmd) {
+			newHistory = append(newHistory, (*h)[idx])
+		}
+	}
+	*h = newHistory
 	return nil
 }
 func (h *ZshHistory) Recent(d time.Duration) error {
+	t := time.Now().Add(-d).Unix()
+	newHistory := make([]ZshHistoryItem, 0)
+	for idx := range *h {
+		if (*h)[idx].When < t {
+			newHistory = append(newHistory, (*h)[idx])
+		}
+	}
+	*h = newHistory
 	return nil
 }
 func (h *ZshHistory) Write(dryRun bool) error {
-	return nil
+	if len(*h) == 0 {
+		return os.WriteFile(relativePath(ZSH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
+	}
+	var buffer bytes.Buffer
+	for idx := range *h {
+		buffer.WriteString(fmt.Sprintf(": %d:%s\n", (*h)[idx].When, (*h)[idx].Cmd))
+	}
+	if dryRun {
+		return os.WriteFile(DRY_RUN_OUTPUT_PATH, buffer.Bytes(), 0644)
+	}
+	return os.WriteFile(relativePath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
 }
