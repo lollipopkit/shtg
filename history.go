@@ -19,11 +19,12 @@ type TidyIface interface {
 	Recent(d time.Duration) error
 	Write(dryRun bool) error
 	Len() int
+	Combine(other TidyIface) error
 }
 
 type FishHistoryItem struct {
-	Cmd   string   `json:"cmd"`
-	When  int64    `json:"when"`
+	Cmd  string `json:"cmd"`
+	When int64  `json:"when"`
 }
 type FishHistory []FishHistoryItem
 
@@ -31,7 +32,7 @@ func (a FishHistory) Len() int           { return len(a) }
 func (a FishHistory) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a FishHistory) Less(i, j int) bool { return a[i].When < a[j].When }
 func (h *FishHistory) Read() error {
-	bytes, err := os.ReadFile(relativePath(FISH_HISTORY_RELATIVE_PATH))
+	bytes, err := os.ReadFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH))
 	if err != nil {
 		return err
 	}
@@ -84,16 +85,34 @@ func (h *FishHistory) Recent(d time.Duration) error {
 }
 func (h *FishHistory) Write(dryRun bool) error {
 	if len(*h) == 0 {
-		return os.WriteFile(relativePath(FISH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
+		return os.WriteFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
 	}
 	bytes, err := yaml.Marshal(h)
 	if err != nil {
 		return err
 	}
 	if dryRun {
-		return os.WriteFile(DRY_RUN_OUTPUT_PATH, bytes, 0644)
+		return os.WriteFile("fish_" + DRY_RUN_OUTPUT_PATH, bytes, 0644)
 	}
-	return os.WriteFile(relativePath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
+	return os.WriteFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
+}
+func (h *FishHistory) Combine(other TidyIface) error {
+	switch other.(type) {
+	case *FishHistory:
+		*h = append(*h, *other.(*FishHistory)...)
+		return nil
+	case *ZshHistory:
+		zshHistory := *other.(*ZshHistory)
+		for idx := range zshHistory {
+			*h = append(*h, FishHistoryItem{
+				Cmd:  zshHistory[idx].Cmd,
+				When: zshHistory[idx].When,
+			})
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported type %T", other)
+	}
 }
 
 type ZshHistoryItem struct {
@@ -106,7 +125,7 @@ func (a ZshHistory) Len() int           { return len(a) }
 func (a ZshHistory) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ZshHistory) Less(i, j int) bool { return a[i].When < a[j].When }
 func (h *ZshHistory) Read() error {
-	bytes, err := os.ReadFile(relativePath(ZSH_HISTORY_RELATIVE_PATH))
+	bytes, err := os.ReadFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH))
 	if err != nil {
 		return err
 	}
@@ -171,14 +190,32 @@ func (h *ZshHistory) Recent(d time.Duration) error {
 }
 func (h *ZshHistory) Write(dryRun bool) error {
 	if len(*h) == 0 {
-		return os.WriteFile(relativePath(ZSH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
+		return os.WriteFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
 	}
 	var buffer bytes.Buffer
 	for idx := range *h {
-		buffer.WriteString(fmt.Sprintf(": %d:%s\n", (*h)[idx].When, (*h)[idx].Cmd))
+		buffer.WriteString(fmt.Sprintf(": %d:0;%s\n", (*h)[idx].When, (*h)[idx].Cmd))
 	}
 	if dryRun {
-		return os.WriteFile(DRY_RUN_OUTPUT_PATH, buffer.Bytes(), 0644)
+		return os.WriteFile("zsh_" + DRY_RUN_OUTPUT_PATH, buffer.Bytes(), 0644)
 	}
-	return os.WriteFile(relativePath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
+	return os.WriteFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
+}
+func (h *ZshHistory) Combine(other TidyIface) error {
+	switch other.(type) {
+	case *ZshHistory:
+		*h = append(*h, *other.(*ZshHistory)...)
+		return nil
+	case *FishHistory:
+		fishHistory := *other.(*FishHistory)
+		for idx := range fishHistory {
+			*h = append(*h, ZshHistoryItem{
+				Cmd:  fishHistory[idx].Cmd,
+				When: fishHistory[idx].When,
+			})
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported type %T", other)
+	}
 }

@@ -21,8 +21,8 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeDup)
 				},
-				Description: "remove duplicate history",
-				Usage:       "shtg dup",
+				Usage: "remove duplicate history",
+				UsageText:       "shtg dup",
 			},
 			{
 				Name:    "re",
@@ -30,8 +30,8 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRe)
 				},
-				Description: "remove history which match regex",
-				Usage:       "shtg re 'scp xx x:/xxx'",
+				Usage: "remove history which match regex",
+				UsageText:       "shtg re 'scp xx x:/xxx'",
 			},
 			{
 				Name:    "recent",
@@ -39,17 +39,17 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRecent)
 				},
-				Description: "remove history in duration",
-				Usage:       "shtg recent 12h",
+				Usage: "remove history in duration",
+				UsageText:       "shtg recent 12h",
 			},
 			{
 				Name:    "sync",
 				Aliases: []string{"s"},
 				Action: func(ctx *cli.Context) error {
-					return sync()
+					return sync(ctx)
 				},
-				Description: "sync history between zsh / fish",
-				Usage:       "shtg sync",
+				Usage: "sync history between zsh / fish",
+				UsageText:       "shtg sync",
 			},
 		},
 		Flags: []cli.Flag{
@@ -97,7 +97,7 @@ func tidy(c *cli.Context, mode Mode) error {
 	}
 
 	if !mode.Check(c) {
-		term.Warn("Usage: " + c.Command.Usage)
+		term.Warn("Usage: " + c.Command.UsageText)
 		return nil
 	}
 	beforeLen := iface.Len()
@@ -106,7 +106,7 @@ func tidy(c *cli.Context, mode Mode) error {
 		return err
 	}
 	afterLen := iface.Len()
-	printChanges(beforeLen, afterLen)
+	printChanges(typ, beforeLen, afterLen)
 
 	dryRun := c.Bool("dry-run")
 	if dryRun {
@@ -115,20 +115,56 @@ func tidy(c *cli.Context, mode Mode) error {
 	return iface.Write(dryRun)
 }
 
-func sync() error {
-	term.Err("not implemented")
-	return nil
+func sync(c *cli.Context) error {
+	zsh := &ZshHistory{}
+	err := zsh.Read()
+	if err != nil {
+		return err
+	}
+	fish := &FishHistory{}
+	err = fish.Read()
+	if err != nil {
+		return err
+	}
+
+	fBeforeLen := fish.Len()
+	zBeforeLen := zsh.Len()
+	fish.Combine(zsh)
+	zsh.Combine(fish)
+	fAfterLen := fish.Len()
+	zAfterLen := zsh.Len()
+	printChanges(Fish, fBeforeLen, fAfterLen)
+	printChanges(Zsh, zBeforeLen, zAfterLen)
+	
+	dryRun := c.Bool("dry-run")
+	if dryRun {
+		term.Info("output: " + DRY_RUN_OUTPUT_PATH)
+	}
+	err = fish.Write(dryRun)
+	if err != nil {
+		return err
+	}
+	return zsh.Write(dryRun)
 }
 
-func printChanges(beforeLen, afterLen int) {
-	if beforeLen != afterLen {
+func printChanges(typ ShellType, beforeLen, afterLen int) {
+	if beforeLen > afterLen {
 		term.Info(
-			"Origin %d, Removed %d, Now %d",
+			"[%s] Origin %d, Removed %d, Now %d",
+			typ,
 			beforeLen,
 			beforeLen-afterLen,
 			afterLen,
 		)
+	} else if beforeLen < afterLen {
+		term.Info(
+			"[%s] Origin %d, Added %d, Now %d",
+			typ,
+			beforeLen,
+			afterLen-beforeLen,
+			afterLen,
+		)
 	} else {
-		term.Info("No history removed")
+		term.Info("No history changed")
 	}
 }
