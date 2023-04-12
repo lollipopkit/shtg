@@ -92,7 +92,7 @@ func (h *FishHistory) Write(dryRun bool) error {
 		return err
 	}
 	if dryRun {
-		return os.WriteFile("fish_" + DRY_RUN_OUTPUT_PATH, bytes, 0644)
+		return os.WriteFile("fish_"+DRY_RUN_OUTPUT_PATH, bytes, 0644)
 	}
 	return os.WriteFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
 }
@@ -197,7 +197,7 @@ func (h *ZshHistory) Write(dryRun bool) error {
 		buffer.WriteString(fmt.Sprintf(": %d:0;%s\n", (*h)[idx].When, (*h)[idx].Cmd))
 	}
 	if dryRun {
-		return os.WriteFile("zsh_" + DRY_RUN_OUTPUT_PATH, buffer.Bytes(), 0644)
+		return os.WriteFile("zsh_"+DRY_RUN_OUTPUT_PATH, buffer.Bytes(), 0644)
 	}
 	return os.WriteFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
 }

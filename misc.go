@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"strings"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -12,6 +14,18 @@ const (
 	Fish ShellType = "fish"
 	Zsh  ShellType = "zsh"
 )
+
+func getShellType() ShellType {
+	shell := os.Getenv("SHELL")
+	switch true {
+	case strings.HasSuffix(shell, "zsh"):
+		return Zsh
+	case strings.HasSuffix(shell, "fish"):
+		return Fish
+	default:
+		panic("Unknown shell type")
+	}
+}
 
 type Mode string
 

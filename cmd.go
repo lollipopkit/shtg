@@ -21,8 +21,8 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeDup)
 				},
-				Usage: "remove duplicate history",
-				UsageText:       "shtg dup",
+				Usage:     "remove duplicate history",
+				UsageText: "shtg dup",
 			},
 			{
 				Name:    "re",
@@ -30,8 +30,8 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRe)
 				},
-				Usage: "remove history which match regex",
-				UsageText:       "shtg re 'scp xx x:/xxx'",
+				Usage:     "remove history which match regex",
+				UsageText: "shtg re 'scp xx x:/xxx'",
 			},
 			{
 				Name:    "recent",
@@ -39,8 +39,8 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRecent)
 				},
-				Usage: "remove history in duration",
-				UsageText:       "shtg recent 12h",
+				Usage:     "remove history in duration",
+				UsageText: "shtg recent 12h",
 			},
 			{
 				Name:    "sync",
@@ -48,8 +48,8 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return sync(ctx)
 				},
-				Usage: "sync history between zsh / fish",
-				UsageText:       "shtg sync",
+				Usage:     "sync history between zsh / fish",
+				UsageText: "shtg sync",
 			},
 		},
 		Flags: []cli.Flag{
@@ -135,7 +135,7 @@ func sync(c *cli.Context) error {
 	zAfterLen := zsh.Len()
 	printChanges(Fish, fBeforeLen, fAfterLen)
 	printChanges(Zsh, zBeforeLen, zAfterLen)
-	
+
 	dryRun := c.Bool("dry-run")
 	if dryRun {
 		term.Info("output: " + DRY_RUN_OUTPUT_PATH)
