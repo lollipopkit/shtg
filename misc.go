@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -14,19 +16,25 @@ const (
 type Mode string
 
 const (
-	ModeDup Mode = "dup"
-	ModeRe  Mode = "re"
-	ModeOld Mode = "old"
+	ModeDup    Mode = "dup"
+	ModeRe     Mode = "re"
+	ModeRecent Mode = "recent"
 )
 
-func (m Mode) Do(iface TidyIface) error {
+func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
 	switch m {
 	case ModeDup:
 		return iface.Dup()
 	case ModeRe:
-		return iface.Re()
-	case ModeOld:
-		return iface.Old()
+		exp := ctx.Args().Get(0)
+		return iface.Re(exp)
+	case ModeRecent:
+		d := ctx.Args().Get(0)
+		dd, err := time.ParseDuration(d)
+		if err != nil {
+			return err
+		}
+		return iface.Recent(dd)
 	default:
 		panic("Unknown mode" + string(m))
 	}
@@ -39,7 +47,7 @@ func (m Mode) Check(ctx *cli.Context) bool {
 	case ModeRe:
 		// shtg re xxx
 		return ctx.NArg() >= 1
-	case ModeOld:
+	case ModeRecent:
 		// shtg old 1d
 		return ctx.NArg() >= 1
 	default:

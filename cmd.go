@@ -22,7 +22,7 @@ func run() {
 					return tidy(ctx, ModeDup)
 				},
 				Description: "remove duplicate history",
-				Usage: 	 "shtg dup",
+				Usage:       "shtg dup",
 			},
 			{
 				Name:    "re",
@@ -31,38 +31,37 @@ func run() {
 					return tidy(ctx, ModeRe)
 				},
 				Description: "remove history which match regex",
-				Usage: 	 "shtg re 'scp xx x:/xxx'",
+				Usage:       "shtg re 'scp xx x:/xxx'",
 			},
 			{
-				Name:    "old",
+				Name:    "recent",
 				Aliases: []string{"o"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeOld)
+					return tidy(ctx, ModeRecent)
 				},
-				Description: "remove history older than the duration",
-				Usage: 	 "shtg old 1d2m",
+				Description: "remove history in duration",
+				Usage:       "shtg recent 12h",
 			},
 			{
-				Name: "sync",
+				Name:    "sync",
 				Aliases: []string{"s"},
 				Action: func(ctx *cli.Context) error {
 					return sync()
 				},
 				Description: "sync history between zsh / fish",
-				Usage: 	 "shtg sync",
+				Usage:       "shtg sync",
 			},
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "type",
 				Aliases: []string{"t"},
-				Usage:   "shell type",
+				Usage:   "fish / zsh",
 			},
 			&cli.BoolFlag{
 				Name:    "dry-run",
 				Aliases: []string{"d"},
 				Value:   false,
-				Usage:   "dry run",
 			},
 			&cli.StringFlag{
 				Name:    "path",
@@ -101,7 +100,16 @@ func tidy(c *cli.Context, mode Mode) error {
 		term.Warn("Usage: " + c.Command.Usage)
 		return nil
 	}
-	return mode.Do(iface)
+	err = mode.Do(iface, c)
+	if err != nil {
+		return err
+	}
+
+	dryRun := c.Bool("dry-run")
+	if dryRun {
+		term.Info("output: " + DRY_RUN_OUTPUT)
+	}
+	return iface.Write(dryRun)
 }
 
 func sync() error {
