@@ -24,7 +24,6 @@ type TidyIface interface {
 type FishHistoryItem struct {
 	Cmd   string   `json:"cmd"`
 	When  int64    `json:"when"`
-	Paths []string `json:"paths"`
 }
 type FishHistory []FishHistoryItem
 
