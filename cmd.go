@@ -11,9 +11,7 @@ func run() {
 	app := cli.App{
 		Name:        "shtg",
 		Usage:       "Shell History Tool written in Go",
-		Description: "Shell history tool for zsh / fish",
 		Suggest:     true,
-		Copyright:   "lollipopkit",
 		Commands: []*cli.Command{
 			{
 				Name:    "dup",
@@ -21,7 +19,7 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeDup)
 				},
-				Usage:     "remove duplicate history",
+				Usage:     "Remove duplicate history",
 				UsageText: "shtg dup",
 			},
 			{
@@ -30,7 +28,7 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRe)
 				},
-				Usage:     "remove history which match regex",
+				Usage:     "Remove history which match regex",
 				UsageText: "shtg re 'scp xx x:/xxx'",
 			},
 			{
@@ -39,7 +37,7 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRecent)
 				},
-				Usage:     "remove history in duration",
+				Usage:     "Remove history in duration",
 				UsageText: "shtg recent 12h",
 			},
 			{
@@ -48,7 +46,7 @@ func run() {
 				Action: func(ctx *cli.Context) error {
 					return sync(ctx)
 				},
-				Usage:     "sync history between zsh / fish",
+				Usage:     "Sync history between zsh / fish",
 				UsageText: "shtg sync",
 			},
 		},
@@ -62,6 +60,7 @@ func run() {
 				Name:    "dry-run",
 				Aliases: []string{"d"},
 				Value:   false,
+				Usage:   "without write to file",
 			},
 			&cli.StringFlag{
 				Name:    "path",

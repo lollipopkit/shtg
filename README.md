@@ -1,4 +1,4 @@
-## Shell Histories Tools
+## Shell History Tools
 
 ### Features
 - [x] Support zsh / fish
