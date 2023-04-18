@@ -51,7 +51,8 @@ func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
 		}
 		return iface.Recent(dd)
 	case ModeRmLast:
-		return iface.RmLast()
+		iface.RmLast()
+		return nil
 	default:
 		panic("Unknown mode" + string(m))
 	}

@@ -11,7 +11,6 @@ Common usage:
 # remove duplicate history
 shtg dup
 # rm last cmd
-# (rm `shtg rmlast` hiistory & `YOUR LAST CMD` history)
 shtg rmlast
 # remove history with regexp pattern
 shtg re 'pattern'

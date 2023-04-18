@@ -20,9 +20,8 @@ type TidyIface interface {
 	Write(dryRun bool) error
 	Len() int
 	Combine(other TidyIface) error
-	// because `shtg rmlast` itself will be added to history,
-	// so we need to remove the last two items
-	RmLast() error
+	// rm index -2
+	RmLast()
 }
 
 type FishHistoryItem struct {
@@ -117,12 +116,13 @@ func (h *FishHistory) Combine(other TidyIface) error {
 		return fmt.Errorf("unsupported type %T", other)
 	}
 }
-func (h *FishHistory) RmLast() error {
-	if len(*h) == 0 {
-		return nil
+func (h *FishHistory) RmLast() {
+	len_ := len(*h)
+	if len_ > 0 {
+		rmLastCmd := (*h)[len_-1]
+		*h = (*h)[:len_-2]
+		*h = append(*h, rmLastCmd)
 	}
-	*h = (*h)[:len(*h)-2]
-	return nil
 }
 
 type ZshHistoryItem struct {
@@ -229,10 +229,11 @@ func (h *ZshHistory) Combine(other TidyIface) error {
 		return fmt.Errorf("unsupported type %T", other)
 	}
 }
-func (h *ZshHistory) RmLast() error {
-	if len(*h) == 0 {
-		return nil
+func (h *ZshHistory) RmLast() {
+	len_ := len(*h)
+	if len_ >= 2 {
+		rmLastCmd := (*h)[len_-1]
+		*h = (*h)[:len_-2]
+		*h = append(*h, rmLastCmd)
 	}
-	*h = (*h)[:len(*h)-2]
-	return nil
 }
