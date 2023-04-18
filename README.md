@@ -3,13 +3,16 @@
 ### Features
 - [x] Support zsh / fish
 - [x] Sync history between multiple shells
-- [x] Tidy history using `duplicate` / `regexp` / `duration`
+- [x] Tidy history using `duplicate` / `regexp` / `duration` / `last`
 
 ### Usage
 Common usage:
 ```bash
 # remove duplicate history
 shtg dup
+# rm last cmd
+# (rm `shtg rmlast` hiistory & `YOUR LAST CMD` history)
+shtg rmlast
 # remove history with regexp pattern
 shtg re 'pattern'
 # remove history with duration
@@ -29,24 +32,19 @@ NAME:
 USAGE:
    shtg [global options] command [command options] [arguments...]
 
-DESCRIPTION:
-   Shell history tool for zsh / fish
-
 COMMANDS:
-   dup, d     remove duplicate history
-   re, r      remove history which match regex
-   recent, o  remove history in duration
-   sync, s    sync history between zsh / fish
-   help, h    Shows a list of commands or help for one command
+   dup, d      Remove duplicate history
+   re, r       Remove history which match regex
+   recent, o   Remove history in duration
+   rmlast, rl  Remove last cmd
+   sync, s     Sync history between zsh / fish
+   help, h     Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --type value, -t value  fish / zsh
-   --dry-run, -d           (default: false)
+   --dry-run, -d           without write to file (default: false)
    --path value, -p value  history file path
    --help, -h              show help
-
-COPYRIGHT:
-   2023 lollipopkit
 ```
 
 ### Issues

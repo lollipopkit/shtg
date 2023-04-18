@@ -23,7 +23,7 @@ func getShellType() ShellType {
 	case strings.HasSuffix(shell, "fish"):
 		return Fish
 	default:
-		panic("Unknown shell type")
+		panic("Unsupport shell: " + shell)
 	}
 }
 
@@ -33,6 +33,7 @@ const (
 	ModeDup    Mode = "dup"
 	ModeRe     Mode = "re"
 	ModeRecent Mode = "recent"
+	ModeRmLast Mode = "rmlast"
 )
 
 func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
@@ -49,14 +50,16 @@ func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
 			return err
 		}
 		return iface.Recent(dd)
+	case ModeRmLast:
+		return iface.RmLast()
 	default:
 		panic("Unknown mode" + string(m))
 	}
 }
 func (m Mode) Check(ctx *cli.Context) bool {
 	switch m {
-	case ModeDup:
-		// shtg dup
+	case ModeDup, ModeRmLast:
+		// shtg dup, shtg rmlast
 		return true
 	case ModeRe:
 		// shtg re xxx

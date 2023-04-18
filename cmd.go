@@ -41,6 +41,15 @@ func run() {
 				UsageText: "shtg recent 12h",
 			},
 			{
+				Name: "rmlast",
+				Aliases: []string{"rl"},
+				Action: func(ctx *cli.Context) error {
+					return tidy(ctx, ModeRmLast)
+				},
+				Usage: "Remove last cmd",
+				UsageText: "shtg rmlast",
+			},
+			{
 				Name:    "sync",
 				Aliases: []string{"s"},
 				Action: func(ctx *cli.Context) error {
