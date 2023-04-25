@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -10,6 +11,10 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	ErrEmptyHistory = errors.New("empty history")
 )
 
 type TidyIface interface {
@@ -21,7 +26,8 @@ type TidyIface interface {
 	Len() int
 	Combine(other TidyIface) error
 	// rm index -2
-	RmLast()
+	RmLast() error
+	RmLastN(n int) error
 }
 
 type FishHistoryItem struct {
@@ -116,13 +122,23 @@ func (h *FishHistory) Combine(other TidyIface) error {
 		return fmt.Errorf("unsupported type %T", other)
 	}
 }
-func (h *FishHistory) RmLast() {
+func (h *FishHistory) RmLast() error {
 	len_ := len(*h)
 	if len_ > 0 {
 		rmLastCmd := (*h)[len_-1]
 		*h = (*h)[:len_-2]
 		*h = append(*h, rmLastCmd)
+		return nil
 	}
+	return ErrEmptyHistory
+}
+func (h *FishHistory) RmLastN(n int) error {
+	for i := 0; i < n; i++ {
+		if err := h.RmLast(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type ZshHistoryItem struct {
@@ -229,11 +245,21 @@ func (h *ZshHistory) Combine(other TidyIface) error {
 		return fmt.Errorf("unsupported type %T", other)
 	}
 }
-func (h *ZshHistory) RmLast() {
+func (h *ZshHistory) RmLast() error {
 	len_ := len(*h)
 	if len_ >= 2 {
 		rmLastCmd := (*h)[len_-1]
 		*h = (*h)[:len_-2]
 		*h = append(*h, rmLastCmd)
+		return nil
 	}
+	return ErrEmptyHistory
+}
+func (h *ZshHistory) RmLastN(n int) error {
+	for i := 0; i < n; i++ {
+		if err := h.RmLast(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

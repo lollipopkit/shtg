@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,6 +36,7 @@ const (
 	ModeRe     Mode = "re"
 	ModeRecent Mode = "recent"
 	ModeRmLast Mode = "rmlast"
+	ModeRmLastN Mode = "rmlastn"
 )
 
 func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
@@ -51,8 +54,14 @@ func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
 		}
 		return iface.Recent(dd)
 	case ModeRmLast:
-		iface.RmLast()
-		return nil
+		return iface.RmLast()
+	case ModeRmLastN:
+		n := ctx.Args().Get(0)
+		nn, err := strconv.ParseInt(n, 10, 64)
+		if err != nil {
+			return fmt.Errorf("Parse %s to int failed: %w", n, err)
+		}
+		return iface.RmLastN(int(nn))
 	default:
 		panic("Unknown mode" + string(m))
 	}
@@ -62,12 +71,11 @@ func (m Mode) Check(ctx *cli.Context) bool {
 	case ModeDup, ModeRmLast:
 		// shtg dup, shtg rmlast
 		return true
-	case ModeRe:
+	case ModeRe, ModeRecent, ModeRmLastN:
 		// shtg re xxx
-		return ctx.NArg() >= 1
-	case ModeRecent:
 		// shtg old 1d
-		return ctx.NArg() >= 1
+		// shtg last 3
+		return ctx.NArg() == 1
 	default:
 		panic("Unknown mode" + string(m))
 	}
