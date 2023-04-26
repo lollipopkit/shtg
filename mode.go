@@ -2,41 +2,20 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/urfave/cli/v2"
 )
 
-type ShellType string
-
-const (
-	Fish ShellType = "fish"
-	Zsh  ShellType = "zsh"
-)
-
-func getShellType() ShellType {
-	shell := os.Getenv("SHELL")
-	switch true {
-	case strings.HasSuffix(shell, "zsh"):
-		return Zsh
-	case strings.HasSuffix(shell, "fish"):
-		return Fish
-	default:
-		panic("Unsupport shell: " + shell)
-	}
-}
-
 type Mode string
 
 const (
-	ModeDup    Mode = "dup"
-	ModeRe     Mode = "re"
-	ModeRecent Mode = "recent"
-	ModeRmLast Mode = "rmlast"
-	ModeRmLastN Mode = "rmlastn"
+	ModeDup     Mode = "dup"
+	ModeRe           = "re"
+	ModeRecent       = "recent"
+	ModeRmLast       = "rmlast"
+	ModeRmLastN      = "rmlastn"
 )
 
 func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {

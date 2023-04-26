@@ -9,9 +9,9 @@ import (
 
 func run() {
 	app := cli.App{
-		Name:        "shtg",
-		Usage:       "Shell History Tool written in Go",
-		Suggest:     true,
+		Name:    "shtg",
+		Usage:   "Shell History Tool written in Go",
+		Suggest: true,
 		Commands: []*cli.Command{
 			{
 				Name:    "dup",
@@ -41,21 +41,21 @@ func run() {
 				UsageText: "shtg recent 12h",
 			},
 			{
-				Name: "rmlast",
+				Name:    "rmlast",
 				Aliases: []string{"rl"},
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRmLast)
 				},
-				Usage: "Remove last cmd",
+				Usage:     "Remove last cmd",
 				UsageText: "shtg rmlast",
 			},
 			{
-				Name: "last",
+				Name:    "last",
 				Aliases: []string{"l"},
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRmLastN)
 				},
-				Usage: "Remove last N cmd",
+				Usage:     "Remove last N cmd",
 				UsageText: "shtg last",
 			},
 			{

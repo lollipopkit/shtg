@@ -1,4 +1,4 @@
-project_name: server_box_monitor
+project_name: shtg
 builds:
   - env: [CGO_ENABLED=0]
     goos:
