@@ -1,4 +1,4 @@
-## Shell History Tools
+## Shell History Tool
 
 ### Features
 - [x] Support zsh / fish
@@ -10,12 +10,17 @@ Common usage:
 ```bash
 # remove duplicate history
 shtg dup
-# rm last cmd
-shtg rmlast
+# rm previous cmd
+shtg previous
+shtg p
 # remove history with regexp pattern
 shtg re 'pattern'
 # remove history with duration
-shtg recent 12h
+shtg recent 24h
+shtg r 12h
+# remove last N history
+shtg last 10
+shtg l 3
 # you can specify the shell
 shtg -t zsh dup
 # or dry-run
@@ -32,12 +37,13 @@ USAGE:
    shtg [global options] command [command options] [arguments...]
 
 COMMANDS:
-   dup, d      Remove duplicate history
-   re, r       Remove history which match regex
-   recent, o   Remove history in duration
-   rmlast, rl  Remove last cmd
-   sync, s     Sync history between zsh / fish
-   help, h     Shows a list of commands or help for one command
+   dup, d       Remove duplicate history
+   re           Remove history which match regex
+   recent, r    Remove history in duration
+   previous, p  Remove previous cmd
+   last, l      Remove last N cmd
+   sync, s      Sync history between zsh / fish
+   help, h      Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --type value, -t value  fish / zsh

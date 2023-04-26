@@ -26,7 +26,7 @@ type TidyIface interface {
 	Len() int
 	Combine(other TidyIface) error
 	// rm index -2
-	RmLast() error
+	RmPre() error
 	RmLastN(n int) error
 }
 
@@ -122,7 +122,7 @@ func (h *FishHistory) Combine(other TidyIface) error {
 		return fmt.Errorf("unsupported type %T", other)
 	}
 }
-func (h *FishHistory) RmLast() error {
+func (h *FishHistory) RmPre() error {
 	len_ := len(*h)
 	if len_ > 0 {
 		rmLastCmd := (*h)[len_-1]
@@ -134,7 +134,7 @@ func (h *FishHistory) RmLast() error {
 }
 func (h *FishHistory) RmLastN(n int) error {
 	for i := 0; i < n; i++ {
-		if err := h.RmLast(); err != nil {
+		if err := h.RmPre(); err != nil {
 			return err
 		}
 	}
@@ -245,7 +245,7 @@ func (h *ZshHistory) Combine(other TidyIface) error {
 		return fmt.Errorf("unsupported type %T", other)
 	}
 }
-func (h *ZshHistory) RmLast() error {
+func (h *ZshHistory) RmPre() error {
 	len_ := len(*h)
 	if len_ >= 2 {
 		rmLastCmd := (*h)[len_-1]
@@ -257,7 +257,7 @@ func (h *ZshHistory) RmLast() error {
 }
 func (h *ZshHistory) RmLastN(n int) error {
 	for i := 0; i < n; i++ {
-		if err := h.RmLast(); err != nil {
+		if err := h.RmPre(); err != nil {
 			return err
 		}
 	}

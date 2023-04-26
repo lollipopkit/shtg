@@ -24,7 +24,6 @@ func run() {
 			},
 			{
 				Name:    "re",
-				Aliases: []string{"r"},
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRe)
 				},
@@ -33,7 +32,7 @@ func run() {
 			},
 			{
 				Name:    "recent",
-				Aliases: []string{"o"},
+				Aliases: []string{"r"},
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, ModeRecent)
 				},
@@ -41,13 +40,13 @@ func run() {
 				UsageText: "shtg recent 12h",
 			},
 			{
-				Name:    "rmlast",
-				Aliases: []string{"rl"},
+				Name:    "previous",
+				Aliases: []string{"p"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeRmLast)
+					return tidy(ctx, ModeRmPre)
 				},
-				Usage:     "Remove last cmd",
-				UsageText: "shtg rmlast",
+				Usage:     "Remove previous cmd",
+				UsageText: "shtg previous",
 			},
 			{
 				Name:    "last",
