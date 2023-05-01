@@ -17,17 +17,20 @@ var (
 	ErrEmptyHistory = errors.New("empty history")
 )
 
-type TidyIface interface {
+type HistoryIface interface {
 	Read() error
 	Dup() error
 	Re(exp string) error
 	Recent(d time.Duration) error
 	Write(dryRun bool) error
 	Len() int
-	Combine(other TidyIface) error
+	Combine(other HistoryIface) error
 	// rm index -2
 	RmPre() error
 	RmLastN(n int) error
+	Backup() error
+	// overwrite history file with bak file
+	Restore() error
 }
 
 type FishHistoryItem struct {
@@ -104,7 +107,7 @@ func (h *FishHistory) Write(dryRun bool) error {
 	}
 	return os.WriteFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
 }
-func (h *FishHistory) Combine(other TidyIface) error {
+func (h *FishHistory) Combine(other HistoryIface) error {
 	switch other.(type) {
 	case *FishHistory:
 		*h = append(*h, *other.(*FishHistory)...)
@@ -139,6 +142,12 @@ func (h *FishHistory) RmLastN(n int) error {
 		}
 	}
 	return nil
+}
+func (h *FishHistory) Backup() error {
+	return os.Rename(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH+".bak"))
+}
+func (h *FishHistory) Restore() error {
+	return os.Rename(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH+".bak"), hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH))
 }
 
 type ZshHistoryItem struct {
@@ -227,7 +236,7 @@ func (h *ZshHistory) Write(dryRun bool) error {
 	}
 	return os.WriteFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
 }
-func (h *ZshHistory) Combine(other TidyIface) error {
+func (h *ZshHistory) Combine(other HistoryIface) error {
 	switch other.(type) {
 	case *ZshHistory:
 		*h = append(*h, *other.(*ZshHistory)...)
@@ -262,4 +271,10 @@ func (h *ZshHistory) RmLastN(n int) error {
 		}
 	}
 	return nil
+}
+func (h *ZshHistory) Backup() error {
+	return os.Rename(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH+".bak"))
+}
+func (h *ZshHistory) Restore() error {
+	return os.Rename(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH+".bak"), hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH))
 }

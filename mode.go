@@ -18,7 +18,7 @@ const (
 	ModeRmLastN
 )
 
-func (m Mode) Do(iface TidyIface, ctx *cli.Context) error {
+func (m Mode) Do(iface HistoryIface, ctx *cli.Context) error {
 	switch m {
 	case ModeDup:
 		return iface.Dup()

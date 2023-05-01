@@ -66,6 +66,15 @@ func run() {
 				Usage:     "Sync history between zsh / fish",
 				UsageText: "shtg sync",
 			},
+			{
+				Name: "restore",
+				Aliases: []string{"rs"},
+				Action: func(ctx *cli.Context) error {
+					return restore()
+				},
+				Usage:     "Restore history from previous backup",
+				UsageText: "shtg restore",
+			},
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -100,7 +109,7 @@ func tidy(c *cli.Context, mode Mode) error {
 		typ = ShellType(_typ)
 	}
 
-	var iface TidyIface
+	var iface HistoryIface
 	switch typ {
 	case Fish:
 		iface = &FishHistory{}
@@ -127,6 +136,11 @@ func tidy(c *cli.Context, mode Mode) error {
 	dryRun := c.Bool("dry-run")
 	if dryRun {
 		println("output: " + DRY_RUN_OUTPUT_PATH)
+	}
+
+	err = iface.Backup()
+	if err != nil {
+		return err
 	}
 	return iface.Write(dryRun)
 }
@@ -183,4 +197,16 @@ func printChanges(typ ShellType, beforeLen, afterLen int) {
 	} else {
 		println("No history changed")
 	}
+}
+
+func restore() error {
+	var iface HistoryIface
+	typ := getShellType()
+	switch typ {
+	case Fish:
+		iface = &FishHistory{}
+	case Zsh:
+		iface = &ZshHistory{}
+	}
+	return iface.Restore()
 }
