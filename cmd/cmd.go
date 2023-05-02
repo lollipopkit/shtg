@@ -1,13 +1,15 @@
-package main
+package cmd
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/lollipopkit/shtg/consts"
+	"github.com/lollipopkit/shtg/iface"
 	"github.com/urfave/cli/v2"
 )
 
-func run() {
+func Run() {
 	app := cli.App{
 		Name:    "shtg",
 		Usage:   "Shell History Tool written in Go",
@@ -17,7 +19,7 @@ func run() {
 				Name:    "dup",
 				Aliases: []string{"d"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeDup)
+					return tidy(ctx, iface.ModeDup)
 				},
 				Usage:     "Remove duplicate history",
 				UsageText: "shtg dup",
@@ -25,7 +27,7 @@ func run() {
 			{
 				Name:    "re",
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeRe)
+					return tidy(ctx, iface.ModeRe)
 				},
 				Usage:     "Remove history which match regex",
 				UsageText: "shtg re 'scp xx x:/xxx'",
@@ -34,7 +36,7 @@ func run() {
 				Name:    "recent",
 				Aliases: []string{"r"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeRecent)
+					return tidy(ctx, iface.ModeRecent)
 				},
 				Usage:     "Remove history in duration",
 				UsageText: "shtg recent 12h",
@@ -43,7 +45,7 @@ func run() {
 				Name:    "previous",
 				Aliases: []string{"p"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeRmPre)
+					return tidy(ctx, iface.ModeRmPre)
 				},
 				Usage:     "Remove previous cmd",
 				UsageText: "shtg previous",
@@ -52,7 +54,7 @@ func run() {
 				Name:    "last",
 				Aliases: []string{"l"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, ModeRmLastN)
+					return tidy(ctx, iface.ModeRmLastN)
 				},
 				Usage:     "Remove last N cmd",
 				UsageText: "shtg last",
@@ -78,20 +80,15 @@ func run() {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "type",
-				Aliases: []string{"t"},
+				Name:    "shell",
+				Aliases: []string{"s"},
 				Usage:   "fish / zsh",
 			},
 			&cli.BoolFlag{
-				Name:    "dry-run",
+				Name:    "dry",
 				Aliases: []string{"d"},
 				Value:   false,
 				Usage:   "without write to file",
-			},
-			&cli.StringFlag{
-				Name:    "path",
-				Aliases: []string{"p"},
-				Usage:   "history file path",
 			},
 		},
 	}
@@ -100,7 +97,7 @@ func run() {
 	}
 }
 
-func tidy(c *cli.Context, mode Mode) error {
+func tidy(c *cli.Context, mode iface.Mode) error {
 	_typ := c.String("type")
 	var typ ShellType
 	if _typ == "" {
@@ -109,14 +106,14 @@ func tidy(c *cli.Context, mode Mode) error {
 		typ = ShellType(_typ)
 	}
 
-	var iface HistoryIface
+	var iface_ iface.HistoryIface
 	switch typ {
 	case Fish:
-		iface = &FishHistory{}
+		iface_ = &iface.FishHistory{}
 	case Zsh:
-		iface = &ZshHistory{}
+		iface_ = &iface.ZshHistory{}
 	}
-	err := iface.Read()
+	err := iface_.Read()
 	if err != nil {
 		return err
 	}
@@ -125,33 +122,33 @@ func tidy(c *cli.Context, mode Mode) error {
 		println("Usage: " + c.Command.UsageText)
 		return nil
 	}
-	beforeLen := iface.Len()
-	err = mode.Do(iface, c)
+	beforeLen := iface_.Len()
+	err = mode.Do(iface_, c)
 	if err != nil {
 		return err
 	}
-	afterLen := iface.Len()
+	afterLen := iface_.Len()
 	printChanges(typ, beforeLen, afterLen)
 
-	dryRun := c.Bool("dry-run")
+	dryRun := c.Bool("dry")
 	if dryRun {
-		println("output: " + DRY_RUN_OUTPUT_PATH)
+		println("\noutput: " + consts.DRY_RUN_OUTPUT_PATH)
 	}
 
-	err = iface.Backup()
+	err = iface_.Backup()
 	if err != nil {
 		return err
 	}
-	return iface.Write(dryRun)
+	return iface_.Write(dryRun)
 }
 
 func sync(c *cli.Context) error {
-	zsh := &ZshHistory{}
+	zsh := &iface.ZshHistory{}
 	err := zsh.Read()
 	if err != nil {
 		return err
 	}
-	fish := &FishHistory{}
+	fish := &iface.FishHistory{}
 	err = fish.Read()
 	if err != nil {
 		return err
@@ -168,7 +165,7 @@ func sync(c *cli.Context) error {
 
 	dryRun := c.Bool("dry-run")
 	if dryRun {
-		println("output: " + DRY_RUN_OUTPUT_PATH)
+		println("output: " + consts.DRY_RUN_OUTPUT_PATH)
 	}
 	err = fish.Write(dryRun)
 	if err != nil {
@@ -200,13 +197,13 @@ func printChanges(typ ShellType, beforeLen, afterLen int) {
 }
 
 func restore() error {
-	var iface HistoryIface
+	var iface_ iface.HistoryIface
 	typ := getShellType()
 	switch typ {
 	case Fish:
-		iface = &FishHistory{}
+		iface_ = &iface.FishHistory{}
 	case Zsh:
-		iface = &ZshHistory{}
+		iface_ = &iface.ZshHistory{}
 	}
-	return iface.Restore()
+	return iface_.Restore()
 }

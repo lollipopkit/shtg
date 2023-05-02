@@ -1,5 +1,7 @@
 package main
 
+import "github.com/lollipopkit/shtg/cmd"
+
 func main() {
-	run()
+	cmd.Run()
 }

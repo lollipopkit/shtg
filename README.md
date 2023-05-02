@@ -43,13 +43,13 @@ COMMANDS:
    previous, p  Remove previous cmd
    last, l      Remove last N cmd
    sync, s      Sync history between zsh / fish
+   restore, rs  Restore history from previous backup
    help, h      Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --type value, -t value  fish / zsh
-   --dry-run, -d           without write to file (default: false)
-   --path value, -p value  history file path
-   --help, -h              show help
+   --shell value, -s value  fish / zsh
+   --dry, -d                without write to file (default: false)
+   --help, -h               show help
 ```
 
 ### Issues
