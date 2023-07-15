@@ -55,7 +55,7 @@ func (h *FishHistory) Read() error {
 	return nil
 }
 func (h *FishHistory) Dup() error {
-	sort.Sort(*h)
+	sort.Sort(sort.Reverse(*h))
 	historyMap := make(map[string]*FishHistoryItem)
 	for idx := range *h {
 		if _, ok := historyMap[(*h)[idx].Cmd]; ok {
@@ -184,7 +184,7 @@ func (h *ZshHistory) Read() error {
 	return nil
 }
 func (h *ZshHistory) Dup() error {
-	sort.Sort(*h)
+	sort.Sort(sort.Reverse(*h))
 	historyMap := make(map[string]*ZshHistoryItem)
 	for idx := range *h {
 		if _, ok := historyMap[(*h)[idx].Cmd]; ok {
