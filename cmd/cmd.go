@@ -25,7 +25,7 @@ func Run() {
 				UsageText: "shtg dup",
 			},
 			{
-				Name:    "re",
+				Name: "re",
 				Action: func(ctx *cli.Context) error {
 					return tidy(ctx, iface.ModeRe)
 				},
@@ -45,7 +45,7 @@ func Run() {
 				Name:    "previous",
 				Aliases: []string{"p"},
 				Action: func(ctx *cli.Context) error {
-					return tidy(ctx, iface.ModeRmPre)
+					return tidy(ctx, iface.ModePre)
 				},
 				Usage:     "Remove previous cmd",
 				UsageText: "shtg previous",
@@ -69,7 +69,7 @@ func Run() {
 				UsageText: "shtg sync",
 			},
 			{
-				Name: "restore",
+				Name:    "restore",
 				Aliases: []string{"rs"},
 				Action: func(ctx *cli.Context) error {
 					return restore()
@@ -98,7 +98,7 @@ func Run() {
 }
 
 func tidy(c *cli.Context, mode iface.Mode) error {
-	_typ := c.String("type")
+	_typ := c.String("shell")
 	var typ ShellType
 	if _typ == "" {
 		typ = getShellType()
@@ -106,40 +106,51 @@ func tidy(c *cli.Context, mode iface.Mode) error {
 		typ = ShellType(_typ)
 	}
 
-	var iface_ iface.HistoryIface
+	// Init instance of correct type
+	var instance iface.HistoryIface
 	switch typ {
 	case Fish:
-		iface_ = &iface.FishHistory{}
+		instance = &iface.FishHistory{}
 	case Zsh:
-		iface_ = &iface.ZshHistory{}
+		instance = &iface.ZshHistory{}
 	}
-	err := iface_.Read()
+
+	// Read data from file
+	err := instance.Read()
 	if err != nil {
 		return err
 	}
 
+	// Check args of current mode
 	if !mode.Check(c) {
 		println("Usage: " + c.Command.UsageText)
 		return nil
 	}
-	beforeLen := iface_.Len()
-	err = mode.Do(iface_, c)
+
+	// Do the task
+	beforeLen := instance.Len()
+	err = mode.Do(instance, c)
 	if err != nil {
 		return err
 	}
-	afterLen := iface_.Len()
+	afterLen := instance.Len()
 	printChanges(typ, beforeLen, afterLen)
 
+	// If dra-run, then return
 	dryRun := c.Bool("dry")
 	if dryRun {
 		println("\noutput: " + consts.DRY_RUN_OUTPUT_PATH)
+		return nil
 	}
 
-	err = iface_.Backup()
+	// Backup
+	err = instance.Backup()
 	if err != nil {
 		return err
 	}
-	return iface_.Write(dryRun)
+
+	// Write task result to disk
+	return instance.Write(dryRun)
 }
 
 func sync(c *cli.Context) error {

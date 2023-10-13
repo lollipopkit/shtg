@@ -8,13 +8,13 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type Mode uint
+type Mode uint8
 
 const (
 	ModeDup Mode = iota
 	ModeRe
 	ModeRecent
-	ModeRmPre
+	ModePre
 	ModeRmLastN
 )
 
@@ -32,7 +32,7 @@ func (m Mode) Do(iface HistoryIface, ctx *cli.Context) error {
 			return err
 		}
 		return iface.Recent(dd)
-	case ModeRmPre:
+	case ModePre:
 		return iface.RmPre()
 	case ModeRmLastN:
 		n := ctx.Args().Get(0)
@@ -47,12 +47,12 @@ func (m Mode) Do(iface HistoryIface, ctx *cli.Context) error {
 }
 func (m Mode) Check(ctx *cli.Context) bool {
 	switch m {
-	case ModeDup, ModeRmPre:
-		// shtg dup, shtg rmlast
+	case ModeDup, ModePre:
+		// shtg dup, shtg pre
 		return true
 	case ModeRe, ModeRecent, ModeRmLastN:
 		// shtg re xxx
-		// shtg old 1d
+		// shtg recent 1d
 		// shtg last 3
 		return ctx.NArg() == 1
 	default:

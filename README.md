@@ -10,15 +10,16 @@ Common usage:
 ```bash
 # remove duplicate history
 shtg dup
+shtg d
 # rm previous cmd
 shtg previous
 shtg p
 # remove history with regexp pattern
 shtg re 'pattern'
 # remove history with duration
-shtg recent 24h
-shtg r 12h
-# remove last N history
+shtg recent 7h # 7 hours
+shtg r 3d # 3 days
+# remove last N history (include itself)
 shtg last 10
 shtg l 3
 # you can specify the shell

@@ -30,7 +30,6 @@ type HistoryIface interface {
 	RmPre() error
 	RmLastN(n int) error
 	Backup() error
-	// overwrite history file with bak file
 	Restore() error
 }
 
