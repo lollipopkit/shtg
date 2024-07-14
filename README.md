@@ -52,6 +52,3 @@ GLOBAL OPTIONS:
    --dry, -d                without write to file (default: false)
    --help, -h               show help
 ```
-
-### Issues
-- [ ] Will ignore fish history attr `paths`

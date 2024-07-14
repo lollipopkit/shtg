@@ -6,6 +6,6 @@ import (
 )
 
 // Add HOME path to relative path
-func hoem2AbsPath(relativePath string) string {
+func home2AbsPath(relativePath string) string {
 	return filepath.Join(os.Getenv("HOME"), relativePath)
 }

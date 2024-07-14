@@ -34,8 +34,9 @@ type HistoryIface interface {
 }
 
 type FishHistoryItem struct {
-	Cmd  string `json:"cmd"`
-	When int64  `json:"when"`
+	Cmd   string   `json:"cmd"`
+	When  int64    `json:"when"`
+	Paths []string `json:"paths"`
 }
 type FishHistory []FishHistoryItem
 
@@ -43,7 +44,7 @@ func (a FishHistory) Len() int           { return len(a) }
 func (a FishHistory) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a FishHistory) Less(i, j int) bool { return a[i].When < a[j].When }
 func (h *FishHistory) Read() error {
-	bytes, err := os.ReadFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH))
+	bytes, err := os.ReadFile(home2AbsPath(FISH_HISTORY_RELATIVE_PATH))
 	if err != nil {
 		return err
 	}
@@ -96,7 +97,7 @@ func (h *FishHistory) Recent(d time.Duration) error {
 }
 func (h *FishHistory) Write(dryRun bool) error {
 	if len(*h) == 0 {
-		return os.WriteFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
+		return os.WriteFile(home2AbsPath(FISH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
 	}
 	bytes, err := yaml.Marshal(h)
 	if err != nil {
@@ -105,7 +106,7 @@ func (h *FishHistory) Write(dryRun bool) error {
 	if dryRun {
 		return os.WriteFile(consts.DRY_RUN_OUTPUT_PATH, bytes, 0644)
 	}
-	return os.WriteFile(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
+	return os.WriteFile(home2AbsPath(FISH_HISTORY_RELATIVE_PATH), bytes, 0644)
 }
 func (h *FishHistory) Combine(other HistoryIface) error {
 	switch other.(type) {
@@ -144,10 +145,10 @@ func (h *FishHistory) RmLastN(n int) error {
 	return nil
 }
 func (h *FishHistory) Backup() error {
-	return os.Rename(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH), hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH+".bak"))
+	return os.Rename(home2AbsPath(FISH_HISTORY_RELATIVE_PATH), home2AbsPath(FISH_HISTORY_RELATIVE_PATH+".bak"))
 }
 func (h *FishHistory) Restore() error {
-	return os.Rename(hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH+".bak"), hoem2AbsPath(FISH_HISTORY_RELATIVE_PATH))
+	return os.Rename(home2AbsPath(FISH_HISTORY_RELATIVE_PATH+".bak"), home2AbsPath(FISH_HISTORY_RELATIVE_PATH))
 }
 
 type ZshHistoryItem struct {
@@ -160,7 +161,7 @@ func (a ZshHistory) Len() int           { return len(a) }
 func (a ZshHistory) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ZshHistory) Less(i, j int) bool { return a[i].When < a[j].When }
 func (h *ZshHistory) Read() error {
-	bytes, err := os.ReadFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH))
+	bytes, err := os.ReadFile(home2AbsPath(ZSH_HISTORY_RELATIVE_PATH))
 	if err != nil {
 		return err
 	}
@@ -225,7 +226,7 @@ func (h *ZshHistory) Recent(d time.Duration) error {
 }
 func (h *ZshHistory) Write(dryRun bool) error {
 	if len(*h) == 0 {
-		return os.WriteFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
+		return os.WriteFile(home2AbsPath(ZSH_HISTORY_RELATIVE_PATH), []byte(""), 0644)
 	}
 	var buffer bytes.Buffer
 	for idx := range *h {
@@ -234,7 +235,7 @@ func (h *ZshHistory) Write(dryRun bool) error {
 	if dryRun {
 		return os.WriteFile(consts.DRY_RUN_OUTPUT_PATH, buffer.Bytes(), 0644)
 	}
-	return os.WriteFile(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
+	return os.WriteFile(home2AbsPath(ZSH_HISTORY_RELATIVE_PATH), buffer.Bytes(), 0644)
 }
 func (h *ZshHistory) Combine(other HistoryIface) error {
 	switch other.(type) {
@@ -273,8 +274,8 @@ func (h *ZshHistory) RmLastN(n int) error {
 	return nil
 }
 func (h *ZshHistory) Backup() error {
-	return os.Rename(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH), hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH+".bak"))
+	return os.Rename(home2AbsPath(ZSH_HISTORY_RELATIVE_PATH), home2AbsPath(ZSH_HISTORY_RELATIVE_PATH+".bak"))
 }
 func (h *ZshHistory) Restore() error {
-	return os.Rename(hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH+".bak"), hoem2AbsPath(ZSH_HISTORY_RELATIVE_PATH))
+	return os.Rename(home2AbsPath(ZSH_HISTORY_RELATIVE_PATH+".bak"), home2AbsPath(ZSH_HISTORY_RELATIVE_PATH))
 }
